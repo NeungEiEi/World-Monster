@@ -24,13 +24,7 @@ public class Monster : MonoBehaviour
             }
            
         }
-        else
-        {
-
-            gameObject.SetActive(false);
-            
-        }
-
+      
     }
 
     public void PlayAnimAttack()
@@ -38,11 +32,7 @@ public class Monster : MonoBehaviour
         anim.SetTrigger("Attack");
     }
 
-    public void PlayAnimDie()
-    {
-        anim.SetTrigger("Die");
-    }
-
+   
     public void FinAttack()
     {
         connection.monsterAttack = false;

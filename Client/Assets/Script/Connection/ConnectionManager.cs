@@ -19,6 +19,7 @@ public class ConnectionManager : MonoBehaviour
     public bool monsterAttack;
     public bool monsterDie;
 
+    float timeToRespwan = 5f;
     private void Awake()
     {
         monsterHealthBar = GameObject.Find("MonsterHealthbar").GetComponent<MonsterHealthBar>();
@@ -55,6 +56,7 @@ public class ConnectionManager : MonoBehaviour
         if (PlayerData.currentHealth > 0)
         {
             diePanal.SetActive(false);
+            timeToRespwan = 10f;
             if (timeCooldownAttack <= 0)
             {
                 cooldownAttack.SetActive(false);
@@ -110,13 +112,14 @@ public class ConnectionManager : MonoBehaviour
         else
         {
             diePanal.SetActive(true);
-            float timeToQuit = 5f;
-            timeToQuit -= Time.deltaTime;
 
-            if (timeToQuit <= 0)
+            timeToRespwan -= 1 * Time.deltaTime;
+            Debug.Log(timeToRespwan);
+            if (timeToRespwan <= 0)
             {
-                Application.Quit();
+                PlayerData.currentHealth = PlayerData.maxHealth;
             }
+
         }
 
     }
@@ -149,11 +152,14 @@ public class ConnectionManager : MonoBehaviour
 
     void MonsterAttack(SocketIOEvent evt)
     {
+
         monsterAttack = true;
         Debug.Log(evt.data.ToString());
         PlayerData.currentHealth -= int.Parse(evt.data["MonsterDamage"].ToString());
         Debug.Log(PlayerData.maxHealth + " : " + PlayerData.currentHealth);
         playerHealthBar.SetHealth(PlayerData.currentHealth);
+
+
     }
 
     void Heal(SocketIOEvent evt)
