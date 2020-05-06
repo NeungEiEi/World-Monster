@@ -12,6 +12,7 @@ public class ConnectionManager : MonoBehaviour
     public GameObject cooldownAttack;
     public GameObject cooldownSkill;
     public GameObject icon2X;
+    public GameObject diePanal;
     public float timeCooldownAttack;
     public float timeCooldownSkill;
 
@@ -22,7 +23,7 @@ public class ConnectionManager : MonoBehaviour
     {
         monsterHealthBar = GameObject.Find("MonsterHealthbar").GetComponent<MonsterHealthBar>();
         playerHealthBar = GameObject.Find("PlayerHealthbar").GetComponent<PlayerHealthBar>();
-      
+
     }
     // Start is called before the first frame update
     void Start()
@@ -32,6 +33,7 @@ public class ConnectionManager : MonoBehaviour
         cooldownAttack.SetActive(false);
         cooldownSkill.SetActive(false);
         icon2X.SetActive(false);
+        diePanal.SetActive(false);
         timeCooldownAttack = 0;
         timeCooldownSkill = 0;
 
@@ -50,55 +52,73 @@ public class ConnectionManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(timeCooldownAttack <= 0)
+        if (PlayerData.currentHealth > 0)
         {
-            cooldownAttack.SetActive(false);
-            if (Input.GetKeyDown(KeyCode.W))
+            diePanal.SetActive(false);
+            if (timeCooldownAttack <= 0)
             {
-                JSONObject json = new JSONObject(JSONObject.Type.OBJECT);
-                json.AddField("Damage", PlayerData.damage);
-                socket.Emit("PlayerAttack", json);
-                timeCooldownAttack = PlayerData.cooldownAttack;
-            }
-        }
-        else
-        {
-            cooldownAttack.SetActive(true);
-            timeCooldownAttack -= Time.deltaTime;
-        }
-
-
-        if (timeCooldownSkill <= 0)
-        {
-            cooldownSkill.SetActive(false);
-            if (Input.GetKeyDown(KeyCode.Q))
-            {
-                if(PlayerData.job == "Healer")
+                cooldownAttack.SetActive(false);
+                if (Input.GetKeyDown(KeyCode.W))
                 {
-                    Debug.Log("Heal");
-                    socket.Emit("PlayerHeal");
-                }else if (PlayerData.job == "Fighter")
-                {
-                    Debug.Log("Attack!!");
                     JSONObject json = new JSONObject(JSONObject.Type.OBJECT);
-                    json.AddField("Damage", 5);
+                    json.AddField("Damage", PlayerData.damage);
                     socket.Emit("PlayerAttack", json);
                     timeCooldownAttack = PlayerData.cooldownAttack;
-                }else if (PlayerData.job == "Buffer")
-                {
-                    Debug.Log("Buff");
-                    socket.Emit("PlayerBuff");
                 }
+            }
+            else
+            {
+                cooldownAttack.SetActive(true);
+                timeCooldownAttack -= Time.deltaTime;
+            }
 
 
-                timeCooldownSkill = PlayerData.cooldownSkill;
+            if (timeCooldownSkill <= 0)
+            {
+                cooldownSkill.SetActive(false);
+                if (Input.GetKeyDown(KeyCode.Q))
+                {
+                    if (PlayerData.job == "Healer")
+                    {
+                        Debug.Log("Heal");
+                        socket.Emit("PlayerHeal");
+                    }
+                    else if (PlayerData.job == "Fighter")
+                    {
+                        Debug.Log("Attack!!");
+                        JSONObject json = new JSONObject(JSONObject.Type.OBJECT);
+                        json.AddField("Damage", 10);
+                        socket.Emit("PlayerAttack", json);
+                        timeCooldownAttack = PlayerData.cooldownAttack;
+                    }
+                    else if (PlayerData.job == "Buffer")
+                    {
+                        Debug.Log("Buff");
+                        socket.Emit("PlayerBuff");
+                    }
+
+
+                    timeCooldownSkill = PlayerData.cooldownSkill;
+                }
+            }
+            else
+            {
+                cooldownSkill.SetActive(true);
+                timeCooldownSkill -= Time.deltaTime;
             }
         }
         else
         {
-            cooldownSkill.SetActive(true);
-            timeCooldownSkill -= Time.deltaTime;
+            diePanal.SetActive(true);
+            float timeToQuit = 5f;
+            timeToQuit -= Time.deltaTime;
+
+            if (timeToQuit <= 0)
+            {
+                Application.Quit();
+            }
         }
+
     }
 
     void SpawnMonster(SocketIOEvent evt)
@@ -132,7 +152,7 @@ public class ConnectionManager : MonoBehaviour
         monsterAttack = true;
         Debug.Log(evt.data.ToString());
         PlayerData.currentHealth -= int.Parse(evt.data["MonsterDamage"].ToString());
-        Debug.Log(PlayerData.maxHealth +" : " + PlayerData.currentHealth);
+        Debug.Log(PlayerData.maxHealth + " : " + PlayerData.currentHealth);
         playerHealthBar.SetHealth(PlayerData.currentHealth);
     }
 
@@ -155,5 +175,12 @@ public class ConnectionManager : MonoBehaviour
     void MonsterDie(SocketIOEvent evt)
     {
         monsterDie = true;
+        MonsterData.type = 0;
+    }
+
+    public void isExit()
+    {
+        socket.Emit("disconnect");
+        Application.Quit();
     }
 }

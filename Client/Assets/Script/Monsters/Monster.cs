@@ -7,7 +7,7 @@ public class Monster : MonoBehaviour
     public Animator anim;
     public ConnectionManager connection;
 
-  
+
     private void Awake()
     {
         anim = GetComponent<Animator>();
@@ -16,14 +16,20 @@ public class Monster : MonoBehaviour
 
     private void Update()
     {
-        if (connection.monsterAttack)
+        if (MonsterData.currentHealth > 0)
         {
-            PlayAnimAttack();
-        }else if (connection.monsterDie)
-        {
-            PlayAnimDie();
+            if (connection.monsterAttack)
+            {
+                PlayAnimAttack();
+            }
+           
         }
+        else
+        {
 
+            gameObject.SetActive(false);
+            
+        }
 
     }
 
@@ -42,10 +48,5 @@ public class Monster : MonoBehaviour
         connection.monsterAttack = false;
     }
 
-    public void FinDie()
-    {
-        connection.monsterDie = false;
-        gameObject.SetActive(false);
-    }
-    
+   
 }

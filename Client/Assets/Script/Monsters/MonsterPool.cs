@@ -31,5 +31,11 @@ public class MonsterPool : MonoBehaviour
             spider.SetActive(false);
             bear.SetActive(true);
         }
+        else
+        {
+            wolf.SetActive(false);
+            spider.SetActive(false);
+            bear.SetActive(false);
+        }
     }
 }

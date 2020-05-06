@@ -20,7 +20,7 @@ io.on("connection", (socket) => {
     }
 
     socket.on("PlayerAttack", (data) => {
-        
+
         if (monsterCurrentHealth > 0) {
             if (mosterWeakness == true) {
                 var PlayerDamage = JSON.parse(JSON.stringify(data));
@@ -38,15 +38,17 @@ io.on("connection", (socket) => {
                 console.log("MonsterCurrentHealth : " + monsterCurrentHealth);
                 UpdateMonsterData();
             }
-        }else{
+        } else {
+            console.log("MonsterDie");
             io.emit("MonsterDie");
-            setTimeout(function(){
+            setTimeout(function () {
                 ReSpawnMonster();
-            },5000);
+                console.log("MonsterRespawn");
+            }, 5000);
         }
 
-
     })
+
 
 
     socket.on("PlayerBuff", function () {
@@ -59,14 +61,24 @@ io.on("connection", (socket) => {
         io.emit("Heal");
     })
 
+    socket.on("disconnected",function(){
+        console.log("clinet disconnect");
+    })
+
+
 })
 console.log("server started");
 
+
+
 setInterval(() => {
-    var data = {
-        MonsterDamage: monsterDamage
+    if (monsterCurrentHealth > 0) {
+        var data = {
+            MonsterDamage: monsterDamage
+        }
+        io.emit("MonsterAttack", data)
     }
-    io.emit("MonsterAttack", data)
+    return;
 }, 10000);
 
 
@@ -83,7 +95,7 @@ var MonsterData = {
     MonsterCurrentHealth: monsterCurrentHealth,
 }
 
-function ReSpawnMonster(){
+function ReSpawnMonster() {
     SpawnMonster();
     var MonsterData = {
         MonsterType: monsterType,
